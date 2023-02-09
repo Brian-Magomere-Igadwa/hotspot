@@ -10,5 +10,7 @@ interface DownloadRepository {
 
     suspend fun shareDownload(downloadItem: DownloadItem)
 
+    //just pull the item from our saved in the room db this means the item wont be
+    //visible in the network anymore
     suspend fun unshareDownload(downloadItem: DownloadItem)
 }
