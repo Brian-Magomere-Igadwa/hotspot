@@ -7,7 +7,7 @@ import java.util.*
 @Entity
 data class DownloadItem(
     val fileType: String,
-    val downloadTimestamp: Date,
+    val downloadTimestamp: String,
     val itemTitle: String,
     val itemCategory: DownloadCategories,
     val itemSize: Long,
@@ -15,7 +15,7 @@ data class DownloadItem(
     //the venue should source the download location or estate so that users know where to source
     //files from next time
     val venue:Int,
-    val timeRemaining: Date,
+    val timeRemaining: String,
     @PrimaryKey val id:Int,
 ) {
     companion object {

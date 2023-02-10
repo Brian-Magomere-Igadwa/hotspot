@@ -1,8 +1,9 @@
-package design.propia.hotspot.presentation
+package design.propia.hotspot
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.IntentFilter
+import android.net.wifi.p2p.WifiP2pDeviceList
 import android.net.wifi.p2p.WifiP2pManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -14,8 +15,11 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import design.propia.hotspot.data.data_source.remote.wifi_data.FileServerAsyncTask
 import design.propia.hotspot.data.data_source.remote.wifi_data.WiFiDirectBroadcastReceiver
 import design.propia.hotspot.presentation.ui.theme.HotspotTheme
+import kotlinx.coroutines.*
+import kotlin.coroutines.CoroutineContext
 
 class MainActivity : ComponentActivity() {
     val manager: WifiP2pManager? by lazy(LazyThreadSafetyMode.NONE) {
@@ -31,13 +35,9 @@ class MainActivity : ComponentActivity() {
         addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION)
         addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION)
     }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
-
-        channel = manager?.initialize(this, mainLooper, null)
-        channel?.also { channel ->
-            receiver = manager?.let { WiFiDirectBroadcastReceiver(it, channel, this) }
-        }
-
 
         super.onCreate(savedInstanceState)
         setContent {
@@ -51,10 +51,36 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        channel = manager?.initialize(this, mainLooper, null)
+        channel?.also { channel ->
+            receiver = manager?.let { WiFiDirectBroadcastReceiver(it, channel, this) }
+        }
+
+        manager?.discoverPeers(channel, object : WifiP2pManager.ActionListener {
+
+            override fun onSuccess() {
+                manager?.requestPeers(channel) { peers: WifiP2pDeviceList? ->
+
+                    // Handle peers listS
+                    GlobalScope.launch(Dispatchers.IO) {
+                        FileServerAsyncTask(context = this@MainActivity)
+                            .doInBackground()
+                        FileServerAsyncTask().onPostExecute()
+                    }
+                }
+
+            }
+
+            override fun onFailure(reasonCode: Int) {
+
+            }
+        })
+
     }
 
     override fun onResume() {
         super.onResume()
+
         receiver?.also { receiver ->
             registerReceiver(receiver, intentFilter)
         }
@@ -67,6 +93,8 @@ class MainActivity : ComponentActivity() {
             unregisterReceiver(receiver)
         }
     }
+
+
 }
 
 @Composable
