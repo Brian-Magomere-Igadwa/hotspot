@@ -9,7 +9,7 @@ data class DownloadItem(
     val fileType: String,
     val downloadTimestamp: Date,
     val itemTitle: String,
-    val itemCategory: Int,
+    val itemCategory: DownloadCategories,
     val itemSize: Long,
     val amountDownloaded: Long,
     //the venue should source the download location or estate so that users know where to source
